@@ -3,11 +3,20 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, f
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
 from flask_bcrypt import Bcrypt
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from database import init_db, db, Cluster, Location, Person, Institution, Role, User
 
-# Load environment variables
-load_dotenv()
+# Load environment variables with explicit path and override
+print(f"Current working directory: {os.getcwd()}")
+dotenv_path = find_dotenv()
+if dotenv_path:
+    print(f"Loading .env from: {dotenv_path}")
+    load_dotenv(dotenv_path, override=True)
+    # Verify environment variables were loaded
+    db_url = os.getenv('DATABASE_URL')
+    print(f"DATABASE_URL loaded: {'Yes' if db_url else 'No'}")
+else:
+    print("Warning: .env file not found!")
 
 # Initialize Flask app
 app = Flask(__name__, 
@@ -15,7 +24,7 @@ app = Flask(__name__,
             static_url_path='',
             template_folder='../frontend')
 
-# Configure app
+# Set secret key from environment
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-for-development-only')
 
 # Initialize database
@@ -48,22 +57,63 @@ def get_clusters():
 @app.route('/api/locations')
 def get_locations():
     locations = Location.query.all()
-    return jsonify([{
-        'id': location.id,
-        'name': location.name,
-        'description': location.description,
-        'coordinates': location.coordinates,
-        'cluster_id': location.cluster_id
-    } for location in locations])
+    result = []
+    for location in locations:
+        # Convert coordinates to string representation if they exist
+        coordinates_str = None
+        if location.coordinates:
+            try:
+                # Try to convert to WKT (Well-Known Text) format
+                coordinates_str = str(location.coordinates)
+            except Exception as e:
+                print(f"Error converting coordinates: {e}")
+        
+        # Get cluster name if cluster exists
+        cluster_name = None
+        if location.cluster:
+            cluster_name = location.cluster.name
+        
+        # Create location dict
+        location_dict = {
+            'id': location.id,
+            'name': location.name,
+            'description': location.description,
+            'coordinates_str': coordinates_str,
+            'cluster_id': location.cluster_id,
+            'cluster_name': cluster_name
+        }
+        result.append(location_dict)
+    
+    return jsonify(result)
 
-@app.route('/api/location/<int:location_id>')
+@app.route('/api/location/<int:location_id>', methods=['GET', 'DELETE'])
 def get_location(location_id):
     location = Location.query.get_or_404(location_id)
+    
+    if request.method == 'DELETE':
+        try:
+            db.session.delete(location)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Location deleted successfully'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    # GET request handling
+    # Convert coordinates to string representation if they exist
+    coordinates_str = None
+    if location.coordinates:
+        try:
+            # Try to convert to WKT (Well-Known Text) format
+            coordinates_str = str(location.coordinates)
+        except Exception as e:
+            print(f"Error converting coordinates: {e}")
+    
     return jsonify({
         'id': location.id,
         'name': location.name,
         'description': location.description,
-        'coordinates': location.coordinates,
+        'coordinates_str': coordinates_str,
         'cluster_id': location.cluster_id,
         'cluster_name': location.cluster.name if location.cluster else None
     })

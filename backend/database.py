@@ -3,14 +3,29 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from geoalchemy2 import Geometry
 from datetime import datetime
+from dotenv import load_dotenv, find_dotenv
+
+# Load environment variables explicitly in database.py
+dotenv_path = find_dotenv()
+if dotenv_path:
+    print(f"Loading .env from: {dotenv_path}")
+    load_dotenv(dotenv_path, override=True)
+else:
+    print("Warning: .env file not found!")
 
 # Initialize SQLAlchemy instance
 db = SQLAlchemy()
 
 def init_db(app):
     """Initialize the database with the Flask app"""
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost/moorgrundbuch')
+    # Use only the DATABASE_URL from .env with no fallback
+    database_url = os.getenv('DATABASE_URL')
+    print(f"DATABASE_URL from environment: {database_url}")
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    print(f"Database URL configured: {app.config['SQLALCHEMY_DATABASE_URI']}")
     
     db.init_app(app)
     Migrate(app, db)
