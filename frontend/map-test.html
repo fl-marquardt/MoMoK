@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Test - Moorgrundbuch</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        h1 {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 0;
+        }
+    </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <h1>Map Test</h1>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        let map;
+        let markers = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            addStaticLocations();
+        });
+
+        function initMap() {
+            // Create the map centered on Germany
+            map = L.map('map').setView([51.1657, 10.4515], 6);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
+
+        function addStaticLocations() {
+            // Static location data
+            const staticLocations = [
+                {
+                    id: 1,
+                    name: 'Nordmoor-Standort 1',
+                    description: 'Messstandort im noerdlichen Moorgebiet',
+                    coordinates: 'POINT(10.5 53.5)',
+                    cluster_id: 1,
+                    cluster_name: 'Nordmoor'
+                },
+                {
+                    id: 2,
+                    name: 'Suedmoor-Standort 1',
+                    description: 'Messstandort im suedlichen Moorgebiet',
+                    coordinates: 'POINT(13.5 52.5)',
+                    cluster_id: 2,
+                    cluster_name: 'Suedmoor'
+                },
+                {
+                    id: 3,
+                    name: 'Ostmoor-Standort 1',
+                    description: 'Messstandort im oestlichen Moorgebiet',
+                    coordinates: 'POINT(14.0 52.0)',
+                    cluster_id: 3,
+                    cluster_name: 'Ostmoor'
+                },
+                {
+                    id: 4,
+                    name: 'Westmoor-Standort 1',
+                    description: 'Messstandort im westlichen Moorgebiet',
+                    coordinates: 'POINT(9.5 53.0)',
+                    cluster_id: 4,
+                    cluster_name: 'Westmoor'
+                },
+                {
+                    id: 5,
+                    name: 'Zentralmoor-Standort 1',
+                    description: 'Messstandort im zentralen Moorgebiet',
+                    coordinates: 'POINT(12.0 52.5)',
+                    cluster_id: 5,
+                    cluster_name: 'Zentralmoor'
+                }
+            ];
+            
+            // Add markers for each location
+            staticLocations.forEach(location => {
+                addMarker(location);
+            });
+        }
+
+        function addMarker(location) {
+            // Parse coordinates from WKT format
+            const coords = parseCoordinates(location.coordinates);
+            if (!coords) return;
+            
+            // Create marker
+            const marker = L.marker([coords.lat, coords.lng]).addTo(map);
+            
+            // Add popup with location info
+            marker.bindPopup(`
+                <h3>${location.name}</h3>
+                <p>${location.description || 'Keine Beschreibung verfügbar'}</p>
+                <p>Cluster: ${location.cluster_name || 'Unbekannt'}</p>
+            `);
+            
+            // Store marker for later reference
+            markers.push(marker);
+        }
+
+        function parseCoordinates(coordinates) {
+            if (!coordinates) return null;
+            
+            // Handle GeoJSON format
+            if (typeof coordinates === 'object' && coordinates.type === 'Point') {
+                return {
+                    lng: coordinates.coordinates[0],
+                    lat: coordinates.coordinates[1]
+                };
+            }
+            
+            // Handle WKT format
+            if (typeof coordinates === 'string') {
+                // Extract coordinates from POINT(lng lat) format
+                const match = coordinates.match(/POINT\(([^ ]+) ([^)]+)\)/);
+                if (match) {
+                    return {
+                        lng: parseFloat(match[1]),
+                        lat: parseFloat(match[2])
+                    };
+                }
+            }
+            
+            return null;
+        }
+    </script>
+</body>
+</html> 

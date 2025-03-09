@@ -78,6 +78,7 @@ def get_locations():
             'id': location.id,
             'name': location.name,
             'description': location.description,
+            'coordinates': coordinates_str,
             'coordinates_str': coordinates_str,
             'cluster_id': location.cluster_id,
             'cluster_name': cluster_name
@@ -92,6 +93,47 @@ def get_location(location_id):
     
     if request.method == 'DELETE':
         try:
+            # Check for related records
+            has_related_records = False
+            
+            # Check for related measurement equipment
+            if location.measurement_equipment:
+                has_related_records = True
+            
+            # Check for related location journals
+            if location.location_journals:
+                has_related_records = True
+                
+            # Check for related usage history
+            if location.usage_history:
+                has_related_records = True
+                
+            # Check for related hydrological history
+            if location.hydrological_history:
+                has_related_records = True
+                
+            # Check for related soil history
+            if location.soil_history:
+                has_related_records = True
+                
+            # Check for related vegetation history
+            if location.vegetation_history:
+                has_related_records = True
+                
+            # Check for related person roles
+            if hasattr(location, 'person_roles') and location.person_roles:
+                has_related_records = True
+                
+            # Check for related land parcels
+            if location.land_parcels:
+                has_related_records = True
+            
+            if has_related_records:
+                return jsonify({
+                    'success': False, 
+                    'message': 'Cannot delete location because it has related records. Please remove all related records first.'
+                }), 400
+            
             db.session.delete(location)
             db.session.commit()
             return jsonify({'success': True, 'message': 'Location deleted successfully'})
@@ -162,6 +204,13 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+@app.route('/api/check-auth')
+def check_auth():
+    if current_user.is_authenticated:
+        return jsonify({'authenticated': True, 'user': {'id': current_user.id, 'username': current_user.username}})
+    else:
+        return jsonify({'authenticated': False})
 
 # Error handlers
 @app.errorhandler(404)

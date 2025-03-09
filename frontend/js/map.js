@@ -3,8 +3,11 @@ let map;
 let markers = [];
 
 document.addEventListener('DOMContentLoaded', function() {
-    initMap();
-    loadLocations();
+    // Only initialize the map on the index page
+    if (document.getElementById('map')) {
+        initMap();
+        loadLocations();
+    }
 });
 
 function initMap() {
@@ -18,21 +21,60 @@ function initMap() {
 }
 
 function loadLocations() {
-    // Fetch locations from the API
-    fetch('/api/locations')
-        .then(response => response.json())
-        .then(locations => {
-            // Clear existing markers
-            clearMarkers();
-            
-            // Add markers for each location
-            locations.forEach(location => {
-                addMarker(location);
-            });
-        })
-        .catch(error => {
-            console.error('Error loading locations:', error);
-        });
+    // Use static location data instead of fetching from API
+    console.log("Using static location data for testing");
+    
+    // Static location data
+    const staticLocations = [
+        {
+            id: 1,
+            name: 'Nordmoor-Standort 1',
+            description: 'Messstandort im noerdlichen Moorgebiet',
+            coordinates: 'POINT(10.5 53.5)',
+            cluster_id: 1,
+            cluster_name: 'Nordmoor'
+        },
+        {
+            id: 2,
+            name: 'Suedmoor-Standort 1',
+            description: 'Messstandort im suedlichen Moorgebiet',
+            coordinates: 'POINT(13.5 52.5)',
+            cluster_id: 2,
+            cluster_name: 'Suedmoor'
+        },
+        {
+            id: 3,
+            name: 'Ostmoor-Standort 1',
+            description: 'Messstandort im oestlichen Moorgebiet',
+            coordinates: 'POINT(14.0 52.0)',
+            cluster_id: 3,
+            cluster_name: 'Ostmoor'
+        },
+        {
+            id: 4,
+            name: 'Westmoor-Standort 1',
+            description: 'Messstandort im westlichen Moorgebiet',
+            coordinates: 'POINT(9.5 53.0)',
+            cluster_id: 4,
+            cluster_name: 'Westmoor'
+        },
+        {
+            id: 5,
+            name: 'Zentralmoor-Standort 1',
+            description: 'Messstandort im zentralen Moorgebiet',
+            coordinates: 'POINT(12.0 52.5)',
+            cluster_id: 5,
+            cluster_name: 'Zentralmoor'
+        }
+    ];
+    
+    // Clear existing markers
+    clearMarkers();
+    
+    // Add markers for each location
+    staticLocations.forEach(location => {
+        addMarker(location);
+    });
 }
 
 function addMarker(location) {
@@ -99,39 +141,54 @@ function parseCoordinates(coordinates) {
     return null;
 }
 
-// Search functionality
-document.getElementById('searchButton').addEventListener('click', function() {
-    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+// Search functionality for the index page
+document.addEventListener('DOMContentLoaded', function() {
+    const searchButton = document.getElementById('searchButton');
+    const searchInput = document.getElementById('searchInput');
     
-    if (!searchTerm) {
-        loadLocations();
-        return;
-    }
-    
-    // Fetch all locations and filter them
-    fetch('/api/locations')
-        .then(response => response.json())
-        .then(locations => {
-            // Clear existing markers
-            clearMarkers();
+    // Only add event listener on the index page
+    if (searchButton && searchInput && document.getElementById('map')) {
+        searchButton.addEventListener('click', function() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
             
-            // Filter locations by name or description
-            const filteredLocations = locations.filter(location => 
-                location.name.toLowerCase().includes(searchTerm) || 
-                (location.description && location.description.toLowerCase().includes(searchTerm))
-            );
-            
-            // Add markers for filtered locations
-            filteredLocations.forEach(location => {
-                addMarker(location);
-            });
-            
-            // If no results, show message
-            if (filteredLocations.length === 0) {
-                alert('Keine Standorte gefunden, die dem Suchbegriff entsprechen.');
+            if (!searchTerm) {
+                loadLocations();
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error searching locations:', error);
+            
+            // Fetch all locations and filter them
+            fetch('/api/locations')
+                .then(response => response.json())
+                .then(locations => {
+                    // Clear existing markers
+                    clearMarkers();
+                    
+                    // Filter locations by name or description
+                    const filteredLocations = locations.filter(location => 
+                        location.name.toLowerCase().includes(searchTerm) || 
+                        (location.description && location.description.toLowerCase().includes(searchTerm))
+                    );
+                    
+                    // Add markers for filtered locations
+                    filteredLocations.forEach(location => {
+                        addMarker(location);
+                    });
+                    
+                    // If no results, show message
+                    if (filteredLocations.length === 0) {
+                        alert('Keine Standorte gefunden, die dem Suchbegriff entsprechen.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error searching locations:', error);
+                });
         });
+        
+        // Add event listener for search input (Enter key)
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('map')) {
+                searchButton.click();
+            }
+        });
+    }
 }); 
