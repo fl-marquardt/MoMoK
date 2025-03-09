@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moorgrundbuch</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Moorgrundbuch</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">Kartenübersicht</a></li>
+                <li><a href="locations.html">Standorte</a></li>
+                <li><a href="persons.html">Personen</a></li>
+                <li><a href="institutions.html">Institutionen</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Suche nach Standorten...">
+            <button id="searchButton">Suchen</button>
+        </div>
+
+        <div id="map"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Moorgrundbuch. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Main JS -->
+    <script src="js/map.js"></script>
+    <script src="js/scripts.js"></script>
+</body>
+</html> 

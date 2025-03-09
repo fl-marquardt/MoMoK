@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Serverfehler</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .error-code {
+            font-size: 120px;
+            color: #d9534f;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        
+        .back-home {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #5cb85c;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .back-home:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Moorgrundbuch</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Kartenübersicht</a></li>
+                <li><a href="locations.html">Standorte</a></li>
+                <li><a href="persons.html">Personen</a></li>
+                <li><a href="institutions.html">Institutionen</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="error-container">
+            <div class="error-code">500</div>
+            <div class="error-message">Interner Serverfehler</div>
+            <p>Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.</p>
+            <a href="index.html" class="back-home">Zurück zur Startseite</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Moorgrundbuch. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <script src="js/scripts.js"></script>
+</body>
+</html> 

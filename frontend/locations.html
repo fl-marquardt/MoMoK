@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standorte - Moorgrundbuch</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Moorgrundbuch</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Kartenübersicht</a></li>
+                <li><a href="locations.html" class="active">Standorte</a></li>
+                <li><a href="persons.html">Personen</a></li>
+                <li><a href="institutions.html">Institutionen</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Suche nach Standorten...">
+            <button id="searchButton">Suchen</button>
+        </div>
+
+        <div class="table-actions">
+            <button id="addLocationBtn">Neuen Standort hinzufügen</button>
+        </div>
+
+        <table class="sortable" id="locationsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Beschreibung</th>
+                    <th>Cluster</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Moorgrundbuch. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <script src="js/scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLocations();
+            
+            // Add event listener for search button
+            document.getElementById('searchButton').addEventListener('click', function() {
+                const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+                loadLocations(searchTerm);
+            });
+            
+            // Add event listener for add location button
+            document.getElementById('addLocationBtn').addEventListener('click', function() {
+                window.location.href = 'location-form.html';
+            });
+        });
+        
+        function loadLocations(searchTerm = '') {
+            // Fetch locations from the API
+            fetch('/api/locations')
+                .then(response => response.json())
+                .then(locations => {
+                    const tableBody = document.querySelector('#locationsTable tbody');
+                    tableBody.innerHTML = '';
+                    
+                    // Filter locations if search term is provided
+                    let filteredLocations = locations;
+                    if (searchTerm) {
+                        filteredLocations = locations.filter(location => 
+                            location.name.toLowerCase().includes(searchTerm) || 
+                            (location.description && location.description.toLowerCase().includes(searchTerm))
+                        );
+                    }
+                    
+                    // Add rows for each location
+                    filteredLocations.forEach(location => {
+                        const row = document.createElement('tr');
+                        
+                        row.innerHTML = `
+                            <td>${location.id}</td>
+                            <td>${location.name}</td>
+                            <td>${location.description || '-'}</td>
+                            <td>${location.cluster_name || '-'}</td>
+                            <td>
+                                <a href="location-detail.html?id=${location.id}" class="btn-view">Ansehen</a>
+                                <a href="location-form.html?id=${location.id}" class="btn-edit">Bearbeiten</a>
+                                <button class="btn-delete" data-id="${location.id}">Löschen</button>
+                            </td>
+                        `;
+                        
+                        tableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners for delete buttons
+                    document.querySelectorAll('.btn-delete').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const locationId = this.getAttribute('data-id');
+                            if (confirm('Sind Sie sicher, dass Sie diesen Standort löschen möchten?')) {
+                                deleteLocation(locationId);
+                            }
+                        });
+                    });
+                    
+                    // Show message if no locations found
+                    if (filteredLocations.length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td colspan="5" class="no-results">Keine Standorte gefunden</td>`;
+                        tableBody.appendChild(row);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading locations:', error);
+                    const tableBody = document.querySelector('#locationsTable tbody');
+                    tableBody.innerHTML = `<tr><td colspan="5" class="error">Fehler beim Laden der Standorte</td></tr>`;
+                });
+        }
+        
+        function deleteLocation(locationId) {
+            // Send delete request to the API
+            fetch(`/api/location/${locationId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Reload locations after successful deletion
+                        loadLocations();
+                        showNotification('Standort erfolgreich gelöscht', 'success');
+                    } else {
+                        throw new Error('Failed to delete location');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting location:', error);
+                    showNotification('Fehler beim Löschen des Standorts', 'error');
+                });
+        }
+    </script>
+</body>
+</html> 
