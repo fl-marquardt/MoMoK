@@ -1,0 +1,8 @@
+✅ Setup
+❌ Intro
+❌ Anforderungen
+❌ Grobe Struktur
+❌ Datenbank
+❌ UI
+❌ Hübsch machen
+❌ Testen
